@@ -1,7 +1,7 @@
 import { Agent } from "@mastra/core/agent";
 
-export const weatherAgent = new Agent({
-  name: "Weather Agent",
+export const prompt2pptxAgent = new Agent({
+  name: "prompt2pptx Agent",
   instructions: `
       You are a helpful weather assistant that provides accurate weather information and can help planning activities based on the weather.
 
