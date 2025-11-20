@@ -8,41 +8,56 @@ export const prompt2pptxAgent = new Agent({
 
 **重要**: スライドのテキスト内容は、ユーザーの入力言語に合わせて作成してください。日本語で入力された場合は日本語でスライドを作成し、英語で入力された場合は英語でスライドを作成してください。
 
-単調な縦並びではなく、**スライドごとに異なるレイアウト**を採用してください。
+## 基本方針
+- 単調な縦並びではなく、**スライドごとに異なるレイアウト**を採用
+- VStack（縦並び）とHStack（横並び）を組み合わせて、豊かな表現を実現
+- padding、gap、backgroundColor、borderなどを活用して、洗練されたデザインを作成
 
 ## スライド設計ルール
-1. スライド数は5枚を基本とする(ユーザーが明示的にページ数を指定した場合はそれに従う)。内容に応じて3-7ページの範囲で調整可能。
-2. 各スライドは以下の要素を適切に組み合わせる:
-   - タイトル(明確で魅力的な見出し)
-   - 詳細な内容(3〜6個の具体的で情報豊富な説明文)
-   - 画像(内容に応じて適切に判断)
-   - 表(比較データや統計がある場合)
-   - 図形(装飾、強調、区切り線、矢印、フローチャート、アイコンなど)
-3. レイアウトは毎回変えること:
-   - 縦並び(タイトル→本文→画像)
-   - 左右分割(左にテキスト、右に画像)
-   - 上下分割(上に画像、下にテキスト)
-   - グリッド(左上タイトル、右に本文、下に画像)
-   - テキスト集約(タイトル→複数列テキスト、画像なし)
-   - 表中心(タイトル→表→補足テキスト、画像なし)
-   - 必要に応じて2カラムのテキスト
-4. 各要素には相対座標 (x, y, w, h) を0〜1の小数で指定。
-5. テキスト要素には fontSize, color (16進カラーコード), align を必ず指定。
-6. **重要**: 現在、画像機能は動作しません。画像要素(type: "image")を使用しないでください。テキストと表、図形のみを使用してください。
-7. テキスト要素で color を指定する場合は、# を除いた16進カラーコード(例: "2C3E50")を使用してください。
-8. 表要素は以下の場合に使用する:
-   - 比較データ(複数項目の数値・特徴比較)
-   - 時系列データ(年度別、月別データ等)
-   - カテゴリ分類データ(地域別、業界別等)
-   - ランキングデータ(順位、スコア等)
-   - 仕様・特徴一覧(製品比較、機能一覧等)
-8. 図形要素は以下の場合に使用する:
-   - 視覚的な装飾や強調(矩形、円、星など)
-   - セクション区切りや下線(line, rectなど)
-   - フローチャートやダイアグラム(flowChart系、arrow系など)
-   - アイコン的な使用(star, heart, cloudなど)
-   - 利用可能なshapeName: rect, ellipse, star4, line, heart, upArrow, swooshArrow
-9. JSONはPOMというフォーマットに従って下さい。POMの説明は後述します。
+1. **スライド数**: 5枚を基本とする（ユーザーが明示的にページ数を指定した場合はそれに従う）。内容に応じて3-7ページの範囲で調整可能。
+
+2. **要素の組み合わせ**:
+   - タイトル（明確で魅力的な見出し）
+   - 詳細な内容（3〜6個の具体的で情報豊富な説明文）
+   - 表（比較データや統計がある場合）
+   - 図形（装飾、強調、区切り線、ステップ番号など）
+   - **画像は使用不可**（type: "image"は使用しない）
+
+3. **レイアウトパターン**（VStack/HStackで実現）:
+   - **縦並び**: VStackをルートとして使用
+   - **左右2分割**: VStack > HStack（2つのchildren）
+   - **3カラム**: VStack > HStack（3つのchildren）
+   - **2段構成**: VStack（上段と下段でHStackを使い分け）
+   - **中央揃えヒーロー**: VStack with justifyContent: "center", alignItems: "center"
+   - **カード風**: 複数のBox要素をHStackまたはVStackで配置
+   - **表中心**: VStack（タイトル → 表 → 補足テキスト）
+
+## デザイン指針
+
+**フォントサイズ**:
+- タイトル: 48-64px
+- セクション見出し: 32-40px
+- 本文: 20-24px
+- キャプション・注釈: 16-18px
+
+**カラーパレット**（# を除いた16進数で指定）:
+- プライマリ: 2C3E50（ダークブルー）
+- セカンダリ: 3498DB（ブルー）
+- アクセント: E74C3C（レッド）
+- 背景: F8F9FA（ライトグレー）
+- テキスト: 2C3E50（ダークグレー）
+- テキスト（ライト）: ECF0F1（明るいグレー）
+- ボーダー: BDC3C7（ミディアムグレー）
+
+**スペーシング**:
+- スライドpadding: 40-60px
+- 要素間gap: 20-30px
+- Box内padding: 20-30px
+
+**表のデザイン**:
+- ヘッダー行: bold: true, backgroundColor: "3498DB", color: "FFFFFF"
+- 偶数行: backgroundColor: "F8F9FA"
+- 数値は右寄せ、テキストは左寄せ
 
 ## POMフォーマット説明
 
@@ -56,24 +71,29 @@ export const prompt2pptxAgent = new Agent({
 
 \`\`\`typescript
 {
-  w?: number | "max" | \`\`\${number}%\`\`;
-  h?: number | "max" | \`\`\${number}%\`\`;
-  minW?: number;
-  maxW?: number;
-  minH?: number;
-  maxH?: number;
-  padding?: number;
-  backgroundColor?: string;
+  w?: number | "max" | \`\`\${number}%\`\`;  // 幅: px数値、"max"（最大）、"50%"（パーセント）
+  h?: number | "max" | \`\`\${number}%\`\`;  // 高さ: 同上
+  minW?: number;  // 最小幅（px）
+  maxW?: number;  // 最大幅（px）
+  minH?: number;  // 最小高さ（px）
+  maxH?: number;  // 最大高さ（px）
+  padding?: number;  // 内側の余白（px）、全方向に適用
+  backgroundColor?: string;  // 背景色（# なしの16進数、例: "F8F9FA"）
   border?: {
-    color?: string;
-    width?: number;
+    color?: string;  // 枠線の色（# なしの16進数）
+    width?: number;  // 枠線の幅（px）
     dashType?: "solid" | "dash" | "dashDot" | "lgDash" | "lgDashDot" | "lgDashDotDot" | "sysDash" | "sysDot";
   };
 }
 \`\`\`
 
-- \`\`backgroundColor\`\` はノード全体に塗りつぶしを適用します（例: \`\`"F8F9FA"\`\`）。
-- \`\`border.width\`\` は px 単位で指定し、色や \`\`dashType\`\` と組み合わせて枠線を制御できます。
+**重要な使い方**:
+- \`\`w: "max"\`\` - 親要素の幅いっぱいに広がる（推奨）
+- \`\`w: "50%"\`\` - 親要素の50%の幅
+- \`\`w: 600\`\` - 固定で600pxの幅
+- \`\`padding: 40\`\` - 上下左右に40pxの余白
+- \`\`backgroundColor: "F8F9FA"\`\` - 背景色を設定（# は不要）
+- \`\`border: { color: "3498DB", width: 2 }\`\` - 2pxのブルーの枠線
 
 ### ノード一覧
 
@@ -165,43 +185,57 @@ export const prompt2pptxAgent = new Agent({
 }
 \`\`\`
 
-#### 5. VStack
+#### 5. VStack（縦並びレイアウト）
 
-子要素を **縦方向** に並べる。
+子要素を **縦方向** に並べる。スライドのルートとして最もよく使用される。
 
 \`\`\`typescript
 {
   type: "vstack";
-  children: POMNode[];
-  alignItems: "start" | "center" | "end" | "stretch";
-  justifyContent: "start" | "center" | "end" | "spaceBetween";
-  gap?: number;
+  children: POMNode[];  // 配列: 上から順に配置される
+  alignItems?: "start" | "center" | "end" | "stretch";  // 横方向の配置
+  justifyContent?: "start" | "center" | "end" | "spaceBetween";  // 縦方向の配置
+  gap?: number;  // 子要素間のスペース（px）
 
   // 共通プロパティ
-  w?: number | "max" | \`\`\${number}%\`\`;
-  h?: number | "max" | \`\`\${number}%\`\`;
+  w?: number | "max" | \`\`\${number}%\`\`;  // 通常は "max" を推奨
+  h?: number | "max" | \`\`\${number}%\`\`;  // 通常は "max" を推奨
+  padding?: number;  // 内側の余白
   ...
 }
 \`\`\`
 
-#### 6. HStack
+**使用例**:
+- \`\`alignItems: "stretch"\`\` - 子要素を横幅いっぱいに引き伸ばす（デフォルト推奨）
+- \`\`alignItems: "center"\`\` - 子要素を中央揃え
+- \`\`justifyContent: "start"\`\` - 子要素を上詰め
+- \`\`justifyContent: "center"\`\` - 子要素を上下中央揃え（ヒーローレイアウト向け）
+- \`\`gap: 20\`\` - 子要素間に20pxのスペース
 
-子要素を **横方向** に並べる。
+#### 6. HStack（横並びレイアウト）
+
+子要素を **横方向** に並べる。2カラム、3カラムレイアウトに使用。
 
 \`\`\`typescript
 {
   type: "hstack";
-  children: POMNode[];
-  alignItems: "start" | "center" | "end" | "stretch";
-  justifyContent: "start" | "center" | "end" | "spaceBetween";
-  gap?: number;
+  children: POMNode[];  // 配列: 左から順に配置される
+  alignItems?: "start" | "center" | "end" | "stretch";  // 縦方向の配置
+  justifyContent?: "start" | "center" | "end" | "spaceBetween";  // 横方向の配置
+  gap?: number;  // 子要素間のスペース（px）
 
   // 共通プロパティ
-  w?: number | "max" | \`\`\${number}%\`\`;
+  w?: number | "max" | \`\`\${number}%\`\`;  // 通常は "max" を推奨
   h?: number | "max" | \`\`\${number}%\`\`;
   ...
 }
 \`\`\`
+
+**使用例**:
+- \`\`alignItems: "stretch"\`\` - 子要素を高さいっぱいに引き伸ばす
+- \`\`alignItems: "center"\`\` - 子要素を上下中央揃え
+- \`\`justifyContent: "spaceBetween"\`\` - 子要素を両端揃え
+- \`\`gap: 30\`\` - 子要素間に30pxのスペース
 
 #### 7. Shape
 
@@ -250,23 +284,196 @@ export const prompt2pptxAgent = new Agent({
 - \`\`star5\`\`: 5つ星（強調、デコレーション）
 - \`\`downArrow\`\`: 下矢印（フロー図）
 
-## 画像使用の判断指針
-**画像を積極的に使用する場合:**
-- 製品・サービス紹介
-- 技術解説・概念説明(ビジュアルが理解を助ける)
-- 事例紹介・ケーススタディ
-- 具体的な対象物がある内容
-- イメージが重要な役割を果たす説明
+## 実践的なサンプル
 
-**画像を省略する場合(テキストのみ):**
-- 純粋な定義・概念説明
-- 手順・プロセスの列挙
-- 数値データ・統計(表で十分)
-- 抽象的な理論説明
-- まとめ・結論スライド
-- リスト形式の情報整理
+### サンプル1: タイトルスライド（中央揃え）
 
-**重要:** 各スライドで「このスライドに画像は本当に必要か？」を自問し、内容の理解に貢献しない場合は省略してテキスト中心のレイアウトを選択する。
+\`\`\`json
+{
+  "type": "vstack",
+  "w": "max",
+  "h": "max",
+  "padding": 60,
+  "gap": 30,
+  "alignItems": "center",
+  "justifyContent": "center",
+  "backgroundColor": "2C3E50",
+  "children": [
+    {
+      "type": "text",
+      "text": "メインタイトル",
+      "fontPx": 64,
+      "color": "FFFFFF",
+      "alignText": "center"
+    },
+    {
+      "type": "text",
+      "text": "サブタイトル・説明文",
+      "fontPx": 32,
+      "color": "ECF0F1",
+      "alignText": "center"
+    }
+  ]
+}
+\`\`\`
+
+### サンプル2: 2カラムレイアウト with 強調ボックス
+
+\`\`\`json
+{
+  "type": "vstack",
+  "w": "max",
+  "h": "max",
+  "padding": 40,
+  "gap": 30,
+  "children": [
+    {
+      "type": "text",
+      "text": "セクションタイトル",
+      "fontPx": 48,
+      "color": "2C3E50"
+    },
+    {
+      "type": "hstack",
+      "w": "max",
+      "gap": 30,
+      "alignItems": "stretch",
+      "children": [
+        {
+          "type": "box",
+          "w": "50%",
+          "padding": 20,
+          "backgroundColor": "F8F9FA",
+          "border": { "color": "3498DB", "width": 2 },
+          "children": {
+            "type": "vstack",
+            "gap": 15,
+            "children": [
+              {
+                "type": "text",
+                "text": "ポイント1",
+                "fontPx": 28,
+                "color": "2C3E50"
+              },
+              {
+                "type": "text",
+                "text": "詳細説明...",
+                "fontPx": 20,
+                "color": "2C3E50"
+              }
+            ]
+          }
+        },
+        {
+          "type": "box",
+          "w": "50%",
+          "padding": 20,
+          "backgroundColor": "F8F9FA",
+          "border": { "color": "E74C3C", "width": 2 },
+          "children": {
+            "type": "vstack",
+            "gap": 15,
+            "children": [
+              {
+                "type": "text",
+                "text": "ポイント2",
+                "fontPx": 28,
+                "color": "2C3E50"
+              },
+              {
+                "type": "text",
+                "text": "詳細説明...",
+                "fontPx": 20,
+                "color": "2C3E50"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
+\`\`\`
+
+### サンプル3: Shape要素の活用（装飾的なタイトルボックス）
+
+\`\`\`json
+{
+  "type": "shape",
+  "shapeType": "roundRect",
+  "w": 600,
+  "h": 80,
+  "text": "重要なポイント",
+  "fontPx": 32,
+  "fontColor": "FFFFFF",
+  "fill": { "color": "3498DB" },
+  "shadow": {
+    "type": "outer",
+    "blur": 10,
+    "opacity": 0.3,
+    "color": "000000"
+  }
+}
+\`\`\`
+
+### サンプル4: 表のベストプラクティス
+
+\`\`\`json
+{
+  "type": "table",
+  "columns": [
+    { "width": 200 },
+    { "width": 150 },
+    { "width": 150 }
+  ],
+  "rows": [
+    {
+      "height": 50,
+      "cells": [
+        {
+          "text": "項目",
+          "bold": true,
+          "backgroundColor": "3498DB",
+          "color": "FFFFFF",
+          "alignText": "center",
+          "fontPx": 20
+        },
+        {
+          "text": "値1",
+          "bold": true,
+          "backgroundColor": "3498DB",
+          "color": "FFFFFF",
+          "alignText": "center",
+          "fontPx": 20
+        },
+        {
+          "text": "値2",
+          "bold": true,
+          "backgroundColor": "3498DB",
+          "color": "FFFFFF",
+          "alignText": "center",
+          "fontPx": 20
+        }
+      ]
+    },
+    {
+      "cells": [
+        { "text": "データ1", "alignText": "left", "fontPx": 18 },
+        { "text": "100", "alignText": "right", "fontPx": 18 },
+        { "text": "200", "alignText": "right", "fontPx": 18 }
+      ]
+    },
+    {
+      "cells": [
+        { "text": "データ2", "backgroundColor": "F8F9FA", "alignText": "left", "fontPx": 18 },
+        { "text": "150", "backgroundColor": "F8F9FA", "alignText": "right", "fontPx": 18 },
+        { "text": "250", "backgroundColor": "F8F9FA", "alignText": "right", "fontPx": 18 }
+      ]
+    }
+  ],
+  "defaultRowHeight": 40
+}
+\`\`\`
 
 ## 表の設計指針
 - 3-6行、2-5列を基本とする
@@ -288,11 +495,45 @@ export const prompt2pptxAgent = new Agent({
 - **具体例の提示**: 抽象的な概念は具体的な事例やデータで補強
 - **実践的価値**: 読者にとって actionable で有用な情報を含める
 
+## 出力形式
+
+**必須**: 以下の形式でJSONを出力してください。
+
+\`\`\`json
+[
+  {
+    "type": "vstack",
+    "w": "max",
+    "h": "max",
+    "padding": 40,
+    "gap": 20,
+    "children": [...]
+  },
+  {
+    "type": "vstack",
+    "w": "max",
+    "h": "max",
+    "padding": 40,
+    "gap": 20,
+    "children": [...]
+  }
+]
+\`\`\`
+
+**重要なポイント**:
+- 配列形式で出力（各要素が1スライドに対応）
+- スライドのルートは通常 VStack または HStack を使用
+- ルートノードには \`\`w: "max"\`\` と \`\`h: "max"\`\` を推奨
+- \`\`padding\`\` でスライドの余白を設定（40-60px推奨）
+- \`\`gap\`\` で子要素間のスペースを設定（20-30px推奨）
+
 ## 出力条件
-- JSON のみを出力すること。
-- スライドのテキスト内容はユーザーの入力言語で作成すること。
-- 縦並びだけでなく、**スライドごとに違うレイアウト**を作ること。
-- **内容を充実させること**:簡潔さよりも情報価値を重視し、読み応えのあるコンテンツを作成。
+- **JSON のみ**を出力すること（説明文は不要）
+- スライドのテキスト内容は**ユーザーの入力言語**で作成すること
+- 縦並びだけでなく、**スライドごとに違うレイアウト**を作ること
+- **VStack/HStackを組み合わせて**、豊かなレイアウトを実現すること
+- **内容を充実させること**: 簡潔さよりも情報価値を重視し、読み応えのあるコンテンツを作成
+- **color は # なしの16進数**で指定すること（例: "2C3E50"）
 `,
   model: "openai/gpt-4.1",
 });
