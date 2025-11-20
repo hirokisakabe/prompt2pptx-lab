@@ -294,5 +294,5 @@ export const prompt2pptxAgent = new Agent({
 - 縦並びだけでなく、**スライドごとに違うレイアウト**を作ること。
 - **内容を充実させること**:簡潔さよりも情報価値を重視し、読み応えのあるコンテンツを作成。
 `,
-  model: "openai/gpt-4o-mini",
+  model: "openai/gpt-4.1",
 });
