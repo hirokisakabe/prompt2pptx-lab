@@ -7,23 +7,27 @@ async function main() {
   const agent = mastra.getAgent("prompt2pptxAgent");
 
   const res = await agent.generate(
-    "地学の基本について説明する5枚のスライドを作成してください。",
+    "地学の基本について説明する5枚のスライドを作成してください。"
   );
 
-  // Extract JSON from the response text
   const text = res.text;
 
-  const jsonMatch = text.match(/```json\n([\s\S]*?)\n```/) || text.match(/```\n([\s\S]*?)\n```/);
+  const jsonMatch =
+    text.match(/```json\n([\s\S]*?)\n```/) ||
+    text.match(/```\n([\s\S]*?)\n```/);
   let jsonStr = jsonMatch ? jsonMatch[1] : text;
 
-  // If the entire response looks like JSON, use it directly
-  if (!jsonMatch && (text.trim().startsWith('[') || text.trim().startsWith('{'))) {
+  if (
+    !jsonMatch &&
+    (text.trim().startsWith("[") || text.trim().startsWith("{"))
+  ) {
     jsonStr = text.trim();
   }
 
   const parsedJson = JSON.parse(jsonStr);
-  // If the response has a "slides" property, use that; otherwise use the whole object
   const pom = z.array(pomNodeSchema).parse(parsedJson.slides || parsedJson);
+
+  console.log("Generated POM:", JSON.stringify(pom, null, 2));
 
   const pptx = await buildPptx(pom, { w: 1280, h: 720 });
 

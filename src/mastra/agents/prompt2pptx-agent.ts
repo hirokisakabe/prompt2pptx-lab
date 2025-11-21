@@ -535,5 +535,5 @@ export const prompt2pptxAgent = new Agent({
 - **内容を充実させること**: 簡潔さよりも情報価値を重視し、読み応えのあるコンテンツを作成
 - **color は # なしの16進数**で指定すること（例: "2C3E50"）
 `,
-  model: "openai/gpt-4.1",
+  model: "openai/gpt-5.1",
 });
