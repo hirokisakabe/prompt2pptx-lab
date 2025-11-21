@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { readFile } from "fs/promises";
+import { readFile, writeFile } from "fs/promises";
 import JSZip from "jszip";
 import { Agent } from "@mastra/core/agent";
 
@@ -48,6 +48,13 @@ async function main() {
     }
   }
 
+  // pngファイルを書き込む
+  images.forEach(async (image, index) => {
+    const base64Data = image.replace(/^data:image\/png;base64,/, "");
+
+    await writeFile(`slide_${index + 1}.png`, base64Data, "base64");
+  });
+
   // openaiでpptxのレイアウトをチェックする
 
   const result = await Promise.all(
@@ -59,7 +66,7 @@ async function main() {
         },
         {
           role: "user",
-          content: image,
+          content: [{ type: "image", image }],
         },
       ]);
 
